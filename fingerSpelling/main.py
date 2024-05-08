@@ -9,6 +9,7 @@ import pyautogui
 import pickle
 import platform
 import sys
+import requests
 
 import xgboost as xgb
 
@@ -152,6 +153,14 @@ while True:
         cv2.imshow("frame", image)
         if cv2.waitKey(10) & 0xFF == 13:
             print("\n입력 :", final_type_store)
+            url = "https://s1r4k3949b.execute-api.ap-northeast-2.amazonaws.com/default/letterCombiner"
+            query = ','.join(final_type_store)
+            params = {'query': query}
+            response = requests.get(url, params=params)
+            if response.status_code == 200:
+                print("조합된 글자 : ", response.text)
+            else:
+                print("조합 실패, 상태코드 : ", response.status_code)
             break
 
 cap.release()
