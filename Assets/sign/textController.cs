@@ -32,6 +32,7 @@ public class textController : MonoBehaviour
         { KeyCode.B, "ば" },
         { KeyCode.M, "ぱ" },
         { KeyCode.L, "び" },
+        { KeyCode.O, "だ" },
         { KeyCode.P, "つ" },
     };
 

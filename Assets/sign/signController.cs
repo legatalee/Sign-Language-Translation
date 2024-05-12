@@ -37,6 +37,7 @@ public class signController : MonoBehaviour
         { KeyCode.B, "yu" },
         { KeyCode.M, "eu" },
         { KeyCode.L, "i" },
+        { KeyCode.O, "ae" },
         { KeyCode.P, "e" },
     };
 
@@ -55,7 +56,7 @@ public class signController : MonoBehaviour
         {
             if (Input.GetKeyDown(key))
             {
-                anim.CrossFade(action, 0.4f);
+                anim.CrossFade(action, 0.3f);
             }
         }
     }
