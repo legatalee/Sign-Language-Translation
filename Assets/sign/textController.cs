@@ -46,6 +46,7 @@ public class textController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        /*
         foreach (var (key, word) in mapAlphabetical)
         {
             if (Input.GetKeyDown(key))
@@ -53,5 +54,6 @@ public class textController : MonoBehaviour
                 text.text = word;
             }
         }
+        */
     }
 }

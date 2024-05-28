@@ -39,6 +39,7 @@ public class signController : MonoBehaviour
         { KeyCode.L, "i" },
         { KeyCode.O, "ae" },
         { KeyCode.P, "e" },
+        { KeyCode.Keypad0, "hello" },
     };
 
     // Start is called before the first frame update
