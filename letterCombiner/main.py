@@ -1,19 +1,24 @@
 from util import join_jamos
+import re
 
 def split(query):
-    return query.split(',')
+    return query.replace(' ', '').split(',')
 
 def assemble(letter_list):
-    return join_jamos(['ㅇ', 'ㅔ', 'ㄱ', 'ㅡ', 'ㄷ', 'ㅡ','ㄹ', 'ㅏ', 'ㅂ'])
-
-def handler(event, context):
+    return join_jamos(letter_list)
     
+def removeSingLetter(word):
+    return re.sub(r'[ㄱ-ㅎㅏ-ㅣ]', '', word)
+
+def lambda_handler(event, context):
+    print(event)
     query = event['queryStringParameters']['query']
-
+    print('query', query)
     letter_list = split(query)
-    result = assemble(letter_list)
-    
+    print('letter_list', letter_list)
+    result = removeSingLetter(assemble(letter_list))
+    print('result', result)
     return {
         'statusCode': 200,
-        'result': result
+        'body': result
     }
