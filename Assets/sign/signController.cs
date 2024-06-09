@@ -31,47 +31,57 @@ public class signController : MonoBehaviour
 {
     private Animator anim;
     private static BlockingCollection<string> messageQueue = new BlockingCollection<string>();
-    private JobHandle socketThreadHandle;
     private ThreadSafeBoolean isAnimating = new ThreadSafeBoolean(false);
 
     Dictionary<KeyCode, string> mapAlphabetical = new Dictionary<KeyCode, string>
     {
-        { KeyCode.R, "giyeok" },
-        { KeyCode.S, "nieun" },
-        { KeyCode.E, "digeut" },
-        { KeyCode.F, "rieul" },
-        { KeyCode.A, "mieum" },
-        { KeyCode.Q, "bieup" },
-        { KeyCode.T, "shiot" },
-        { KeyCode.D, "ieung" },
-        { KeyCode.W, "jieut" },
-        { KeyCode.C, "chieuch" },
-        { KeyCode.Z, "kieuk" },
-        { KeyCode.X, "tieut" },
-        { KeyCode.V, "pieup" },
-        { KeyCode.G, "hieu" },
-        { KeyCode.K, "a" },
-        { KeyCode.I, "ya" },
-        { KeyCode.J, "eo" },
-        { KeyCode.U, "yeo" },
-        { KeyCode.H, "o" },
-        { KeyCode.Y, "yo" },
-        { KeyCode.N, "u" },
-        { KeyCode.B, "yu" },
-        { KeyCode.M, "eu" },
-        { KeyCode.L, "i" },
-        { KeyCode.O, "ae" },
-        { KeyCode.P, "e" },
+        { KeyCode.R, "ㄱ" },
+        { KeyCode.S, "ㄴ" },
+        { KeyCode.E, "ㄷ" },
+        { KeyCode.F, "ㄹ" },
+        { KeyCode.A, "ㅁ" },
+        { KeyCode.Q, "ㅂ" },
+        { KeyCode.T, "ㅅ" },
+        { KeyCode.D, "ㅇ" },
+        { KeyCode.W, "ㅈ" },
+        { KeyCode.C, "ㅊ" },
+        { KeyCode.Z, "ㅋ" },
+        { KeyCode.X, "ㅌ" },
+        { KeyCode.V, "ㅍ" },
+        { KeyCode.G, "ㅎ" },
+        { KeyCode.K, "ㅏ" },
+        { KeyCode.I, "ㅑ" },
+        { KeyCode.J, "ㅓ" },
+        { KeyCode.U, "ㅕ" },
+        { KeyCode.H, "ㅗ" },
+        { KeyCode.Y, "ㅛ" },
+        { KeyCode.N, "ㅜ" },
+        { KeyCode.B, "ㅠ" },
+        { KeyCode.M, "ㅡ" },
+        { KeyCode.L, "ㅣ" },
+        { KeyCode.O, "ㅐ" },
+        { KeyCode.P, "ㅔ" },
     };
 
     Dictionary<string, string> mapPhrase = new Dictionary<string, string>
     {
-        { "안녕", "hello" },
-        { "안녕하다", "hello" },
-        { "나", "me" },
-        { "저", "me" },
-        { "이름", "name" },
-        { "이다", "is" },
+        { "안녕", "안녕" },
+        { "안녕하다", "안녕" },
+        { "만나다", "만나다" },
+        { "반갑다", "즐겁다" },
+        { "나", "나" },
+        { "저", "나" },
+        { "제", "나" },
+        { "소개", "소개" },
+        { "소개하다", "소개" },
+        { "이름", "이름" },
+        { "이다", "이다" },
+        { "오늘", "오늘" },
+        { "날씨", "날씨" },
+        { "맑다", "맑다" },
+        { "즐겁다", "즐겁다" },
+        { "하루", "하루" },
+        { "되다", "되다" },
     };
 
     // Start is called before the first frame update
@@ -79,7 +89,7 @@ public class signController : MonoBehaviour
     {
         anim = gameObject.GetComponent<Animator>();
         SocketThread socketThread = new SocketThread();
-        socketThreadHandle = socketThread.Schedule();
+        socketThread.Schedule();
     }
 
     // Update is called once per frame
@@ -146,16 +156,12 @@ public class signController : MonoBehaviour
 
                     // 서버 시작
                     server.Start();
-                    Console.WriteLine("Server started...");
 
                     // 연결을 계속해서 받아들임
                     while (true)
                     {
-                        Console.WriteLine("Waiting for a connection...");
-
                         // 클라이언트 연결을 비동기적으로 대기
                         TcpClient client = server.AcceptTcpClient();
-                        Console.WriteLine("Connected!");
 
                         // 클라이언트와 통신을 처리할 Task 생성
                         NetworkStream stream = client.GetStream();
@@ -170,7 +176,6 @@ public class signController : MonoBehaviour
                             while ((i = stream.Read(bytes, 0, bytes.Length)) != 0)
                             {
                                 data = Encoding.UTF8.GetString(bytes, 0, i);
-                                Console.WriteLine("Received: {0}", data);
 
                                 // 메시지를 큐에 추가
                                 messageQueue.Add(data);
@@ -178,7 +183,6 @@ public class signController : MonoBehaviour
                                 // 응답 전송
                                 byte[] msg = Encoding.UTF8.GetBytes(data);
                                 stream.Write(msg, 0, msg.Length);
-                                Console.WriteLine("Sent: {0}", data);
                             }
                         }
                         catch (Exception e)

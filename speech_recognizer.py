@@ -54,7 +54,10 @@ if __name__ == "__main__":
         for thread in threads:
             thread.start()
         print("Started")
+        okt = Okt()
         while True:
-            for word in input().split():
-                sock.send(word.encode("utf-8"))
+            stems = okt.morphs(input(), stem=True)
+            print(stems)
+            for stem in stems:
+                sock.send(stem.encode("utf-8"))
                 sock.recv(4096)
