@@ -7,7 +7,6 @@ using System.Net.Sockets;
 using System.Text;
 using System.Collections.Concurrent;
 using System.Threading;
-using Unity.Jobs;
 
 
 class ThreadSafeBoolean
@@ -194,7 +193,7 @@ public class signController : MonoBehaviour
                             // 메시지를 큐에 추가
                             messageQueue.Add(data);
 
-                            // 응답 전송
+                            // 메시지 전송
                             byte[] msg = Encoding.UTF8.GetBytes(data);
                             stream.Write(msg, 0, msg.Length);
                         }

@@ -12,11 +12,13 @@ try:
     print("connected")
 except:
     print("not connected")
+    sock = None
 
 
 class RecognizerThread(Thread):
     record_lock = Lock()
     print_lock = Lock()
+    socket_lock = Lock()
 
     def __init__(self, source: sr.Microphone) -> None:
         super().__init__(daemon=True)
@@ -28,24 +30,24 @@ class RecognizerThread(Thread):
 
     def run(self):
         while True:
-            self.record_lock.acquire()
-            l = localtime()
-            audio = self.recognizer.listen(source, phrase_time_limit=10)
-            t = localtime()
-            self.record_lock.release()
-            text = ''
-            try:
-                text = self.recognizer.recognize_google(audio, language='ko-KR')
-            except:
-                pass
-            pharsed = self.okt.morphs(text, stem=True)
-            for stem in pharsed:
-                sock.send(stem.encode("utf-8"))
-                sock.recv(4096)
-            self.print_lock.acquire()
-            print(f'{"%2d" % l.tm_hour}h:{"%2d" % l.tm_min}m:{"%2d" % l.tm_sec}s ~ {"%2d" % t.tm_hour}h:{"%2d" % t.tm_min}m:{"%2d" % t.tm_sec}s | {text}')
-            print(" " * 25 + " | " + str(pharsed))
-            self.print_lock.release()
+            with self.record_lock:
+                l = localtime()
+                audio = self.recognizer.listen(source, phrase_time_limit=10)
+                t = localtime()
+            with self.socket_lock:
+                text = ''
+                try:
+                    text = self.recognizer.recognize_google(audio, language='ko-KR')
+                except:
+                    pass
+                pharsed = self.okt.morphs(text, stem=True)
+                if sock is not None:
+                    for stem in pharsed:
+                        sock.send(stem.encode("utf-8"))
+                        sock.recv(4096)
+            with self.print_lock:
+                print(f'{"%2d" % l.tm_hour}h:{"%2d" % l.tm_min}m:{"%2d" % l.tm_sec}s ~ {"%2d" % t.tm_hour}h:{"%2d" % t.tm_min}m:{"%2d" % t.tm_sec}s | {text}')
+                print(" " * 25 + " | " + str(pharsed))
 
 
 if __name__ == "__main__":
@@ -54,10 +56,13 @@ if __name__ == "__main__":
         for thread in threads:
             thread.start()
         print("Started")
-        okt = Okt()
-        while True:
-            stems = okt.morphs(input(), stem=True)
-            print(stems)
-            for stem in stems:
-                sock.send(stem.encode("utf-8"))
-                sock.recv(4096)
+        if sock is not None:
+            okt = Okt()
+            while True:
+                stems = okt.morphs(input(), stem=True)
+                print(stems)
+                for stem in stems:
+                    sock.send(stem.encode("utf-8"))
+                    sock.recv(4096)
+        for thread in threads:
+            thread.join()
