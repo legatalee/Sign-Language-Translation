@@ -88,8 +88,15 @@ public class signController : MonoBehaviour
     void Start()
     {
         anim = gameObject.GetComponent<Animator>();
-        SocketThread socketThread = new SocketThread();
-        socketThread.Schedule();
+
+        // 스레드 객체 생성
+        Thread socketThread = new Thread(new ThreadStart(Execute));
+
+        // 스레드를 데몬 스레드로 설정
+        socketThread.IsBackground = true;
+
+        // 스레드 시작
+        socketThread.Start();
     }
 
     // Update is called once per frame
@@ -97,14 +104,17 @@ public class signController : MonoBehaviour
     {
         if (!isAnimating.Value)
         {
+            /*
             foreach (var (key, action) in mapAlphabetical)
             {
                 if (Input.GetKeyDown(key))
                 {
                     isAnimating.Value = true;
                     StartCoroutine(PlayAnimationAndWait(action));
+                    return;
                 }
             }
+            */
             if (messageQueue.Count > 0)
             {
                 string action = messageQueue.Take();
@@ -114,6 +124,11 @@ public class signController : MonoBehaviour
                     StartCoroutine(PlayAnimationAndWait(mapPhrase[action]));
                 }
             }
+            else
+            {
+                isAnimating.Value = true;
+                StartCoroutine(PlayAnimationAndWait("idle"));
+            }
         }
     }
 
@@ -121,7 +136,7 @@ public class signController : MonoBehaviour
     {
         // 애니메이션을 크로스페이드로 실행
         anim.CrossFade(animName, 0.2f);
-        yield return new WaitForSeconds(0.2f);
+        yield return new WaitForSeconds(0.5f);
 
         // 현재 실행 중인 애니메이션 상태 정보를 가져옴
         AnimatorStateInfo stateInfo = anim.GetCurrentAnimatorStateInfo(0);
@@ -137,75 +152,73 @@ public class signController : MonoBehaviour
         isAnimating.Value = false;
     }
 
-    struct SocketThread : IJob
+
+    public void Execute()
     {
-        public void Execute()
+        TcpListener server = null;
+        while (true)
         {
-            TcpListener server = null;
-            while (true)
+            try
             {
-                try
+                // 서버가 사용할 포트 번호
+                Int32 port = 6346;
+                // 로컬 주소
+                IPAddress localAddr = IPAddress.Parse("127.0.0.1");
+
+                // TcpListener 객체를 생성하여 서버 시작
+                server = new TcpListener(localAddr, port);
+
+                // 서버 시작
+                server.Start();
+
+                // 연결을 계속해서 받아들임
+                while (true)
                 {
-                    // 서버가 사용할 포트 번호
-                    Int32 port = 6346;
-                    // 로컬 주소
-                    IPAddress localAddr = IPAddress.Parse("127.0.0.1");
+                    // 클라이언트 연결을 비동기적으로 대기
+                    TcpClient client = server.AcceptTcpClient();
 
-                    // TcpListener 객체를 생성하여 서버 시작
-                    server = new TcpListener(localAddr, port);
+                    // 클라이언트와 통신을 처리할 Task 생성
+                    NetworkStream stream = client.GetStream();
 
-                    // 서버 시작
-                    server.Start();
+                    int i;
+                    byte[] bytes = new byte[1024];
+                    string data;
 
-                    // 연결을 계속해서 받아들임
-                    while (true)
+                    try
                     {
-                        // 클라이언트 연결을 비동기적으로 대기
-                        TcpClient client = server.AcceptTcpClient();
-
-                        // 클라이언트와 통신을 처리할 Task 생성
-                        NetworkStream stream = client.GetStream();
-
-                        int i;
-                        byte[] bytes = new byte[1024];
-                        string data;
-
-                        try
+                        // 클라이언트로부터 데이터 수신
+                        while ((i = stream.Read(bytes, 0, bytes.Length)) != 0)
                         {
-                            // 클라이언트로부터 데이터 수신
-                            while ((i = stream.Read(bytes, 0, bytes.Length)) != 0)
-                            {
-                                data = Encoding.UTF8.GetString(bytes, 0, i);
+                            data = Encoding.UTF8.GetString(bytes, 0, i);
 
-                                // 메시지를 큐에 추가
-                                messageQueue.Add(data);
+                            // 메시지를 큐에 추가
+                            messageQueue.Add(data);
 
-                                // 응답 전송
-                                byte[] msg = Encoding.UTF8.GetBytes(data);
-                                stream.Write(msg, 0, msg.Length);
-                            }
-                        }
-                        catch (Exception e)
-                        {
-                            Console.WriteLine("Exception: {0}", e);
-                        }
-                        finally
-                        {
-                            // 스트림 및 클라이언트 소켓 닫기
-                            stream.Close();
-                            client.Close();
+                            // 응답 전송
+                            byte[] msg = Encoding.UTF8.GetBytes(data);
+                            stream.Write(msg, 0, msg.Length);
                         }
                     }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine("Exception: {0}", e);
+                    }
+                    finally
+                    {
+                        // 스트림 및 클라이언트 소켓 닫기
+                        stream.Close();
+                        client.Close();
+                    }
                 }
-                catch (SocketException e)
-                {
-                    Console.WriteLine("SocketException: {0}", e);
-                }
-                finally
-                {
-                    // 서버를 중지
-                    server.Stop();
-                }
+            }
+            catch (SocketException e)
+            {
+                Console.WriteLine("SocketException: {0}", e);
+            }
+            finally
+            {
+                // 서버를 중지
+                server.Stop();
             }
         }
     }
