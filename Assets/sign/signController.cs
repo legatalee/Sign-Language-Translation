@@ -29,9 +29,10 @@ class ThreadSafeBoolean
 
 public class signController : MonoBehaviour
 {
-    Animator anim;
+    private Animator anim;
     private static BlockingCollection<string> messageQueue = new BlockingCollection<string>();
-    ThreadSafeBoolean isAnimating = new ThreadSafeBoolean(false);
+    private JobHandle socketThreadHandle;
+    private ThreadSafeBoolean isAnimating = new ThreadSafeBoolean(false);
 
     Dictionary<KeyCode, string> mapAlphabetical = new Dictionary<KeyCode, string>
     {
@@ -66,6 +67,7 @@ public class signController : MonoBehaviour
     Dictionary<string, string> mapPhrase = new Dictionary<string, string>
     {
         { "¾È³ç", "hello" },
+        { "¾È³çÇÏ´Ù", "hello" },
         { "³ª", "me" },
         { "Àú", "me" },
         { "ÀÌ¸§", "name" },
@@ -76,8 +78,8 @@ public class signController : MonoBehaviour
     void Start()
     {
         anim = gameObject.GetComponent<Animator>();
-        SocketThread myJob = new SocketThread();
-        myJob.Schedule();
+        SocketThread socketThread = new SocketThread();
+        socketThreadHandle = socketThread.Schedule();
     }
 
     // Update is called once per frame
