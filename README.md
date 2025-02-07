@@ -4,7 +4,7 @@
 
 본 프로젝트는 인공지능 영상 인식을 활용하여 한국수어를 한국어로 변환하는 기능과, 한국어 음성을 3D 모델을 통해 수어로 변환하는 기능을 구현하여 양방향 실시간 번역이 가능하도록 합니다.
 
-[![한국어와 한국 수어 간 양방향 인공지능 번역 시스템](https://img.youtube.com/vi/flWaCQA7Nno/0.jpg)](https://www.youtube.com/watch?v=flWaCQA7Nno)
+[YouTube : [한국어와 한국 수어 간 양방향 인공지능 번역 시스템]](https://www.youtube.com/watch?v=flWaCQA7Nno)
 
 
 ## 사용 기술
